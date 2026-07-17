@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audio Log // Our Playlists</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Special+Elite&family=IBM+Plex+Mono:wght@400;500&family=Cormorant+Garamond:ital,wght@0,500;1,500&display=swap');
+
+  :root{
+    --void: #0A0C0F;
+    --panel: #14181D;
+    --panel-edge: #262E36;
+    --paper: #E9E5DA;
+    --ash: #8B95A0;
+    --green: #5FE38A;
+    --violet: #A98CE0;
+    --blood: #D4534F;
+    --amber: #E3A855;
+    --cyan: #55C8D9;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--void);
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.35) 0, transparent 100%),
+      radial-gradient(1px 1px at 80% 15%, rgba(255,255,255,0.25) 0, transparent 100%),
+      radial-gradient(1px 1px at 60% 70%, rgba(255,255,255,0.2) 0, transparent 100%),
+      radial-gradient(1px 1px at 30% 85%, rgba(255,255,255,0.3) 0, transparent 100%),
+      radial-gradient(circle at 50% 0%, rgba(169,140,224,0.10) 0, transparent 45%),
+      radial-gradient(circle at 90% 90%, rgba(95,227,138,0.06) 0, transparent 40%);
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--paper);
+    min-height: 100vh;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.018) 0px,
+      rgba(255,255,255,0.018) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    z-index: 100;
+  }
+
+  header {
+    text-align: center;
+    padding: 60px 20px 20px;
+  }
+
+  header .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--green);
+  }
+
+  header h1 {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 42px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin: 10px 0 8px;
+    color: var(--paper);
+    text-shadow: 0 0 18px rgba(95,227,138,0.35), 0 0 40px rgba(169,140,224,0.15);
+  }
+
+  header p.sub {
+    font-size: 12.5px;
+    color: var(--ash);
+    margin: 0;
+  }
+
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 30px 20px 100px;
+  }
+
+  .station {
+    margin-bottom: 60px;
+    background: var(--panel);
+    background-image: repeating-linear-gradient(135deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 2px, transparent 2px, transparent 6px);
+    clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+    box-shadow: inset 0 0 0 1px var(--accent, var(--panel-edge)), 0 12px 40px rgba(0,0,0,0.55);
+    padding: 26px;
+  }
+
+  .station .tag {
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent, var(--green));
+    margin-bottom: 6px;
+  }
+
+  .station h2 {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    font-size: 24px;
+    margin: 0 0 6px;
+    color: var(--paper);
+  }
+
+  .station .note {
+    font-family: 'Special Elite', monospace;
+    font-size: 13.5px;
+    color: var(--ash);
+    line-height: 1.6;
+    margin: 0 0 18px;
+  }
+
+  .station iframe {
+    width: 100%;
+    border-radius: 4px;
+    margin-bottom: 18px;
+  }
+
+  .tracklist {
+    max-height: 340px;
+    overflow-y: auto;
+    border-top: 1px dashed var(--panel-edge);
+    padding-top: 14px;
+  }
+
+  .tracklist::-webkit-scrollbar { width: 6px; }
+  .tracklist::-webkit-scrollbar-thumb { background: var(--panel-edge); border-radius: 3px; }
+
+  .track {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 7px 0;
+    font-size: 12.5px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .track:last-child { border-bottom: none; }
+
+  .track .t-title {
+    color: var(--paper);
+    flex: 1;
+  }
+  .track .t-artist {
+    color: var(--ash);
+    text-align: right;
+    flex-shrink: 0;
+    max-width: 45%;
+  }
+
+  .track.highlight .t-title { color: var(--accent, var(--green)); }
+
+  footer {
+    text-align: center;
+    padding: 0 20px 60px;
+  }
+  footer .close-line {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 18px;
+    color: var(--violet);
+    max-width: 480px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .compass {
+    position: fixed;
+    bottom: 18px; left: 18px;
+    width: 42px; height: 42px;
+    opacity: 0.55;
+    pointer-events: none;
+    animation: spin 14s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .compass { animation: none; } }
+
+  .channel-switch {
+    position: fixed;
+    bottom: 18px; right: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px 10px 12px;
+    background: var(--panel);
+    border: 1px solid var(--panel-edge);
+    border-radius: 3px;
+    text-decoration: none;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    z-index: 50;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .channel-switch:hover {
+    border-color: var(--violet);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 0 16px rgba(169,140,224,0.35);
+  }
+  .channel-switch .signal-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--violet);
+    box-shadow: 0 0 8px 2px rgba(169,140,224,0.7);
+    animation: blip 1.8s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes blip {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+  @media (prefers-reduced-motion: reduce) { .channel-switch .signal-dot { animation: none; } }
+  .channel-switch .ch-text {
+    font-family: 'IBM Plex Mono', monospace;
+    line-height: 1.3;
+  }
+  .channel-switch .ch-label {
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ash);
+  }
+  .channel-switch .ch-name {
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--violet);
+  }
+  @media (max-width: 480px) {
+    .channel-switch .ch-label { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">// audio log</div>
+  <h1>Our Playlists</h1>
+  <p class="sub">the soundtrack, such as it is</p>
+</header>
+
+<div class="container">
+
+  <div class="station" style="--accent: #A98CE0; --accent-glow: rgba(169,140,224,0.5);">
+    <div class="tag">Station 01</div>
+    <h2>I Love You</h2>
+    <p class="note">Short and to the point.</p>
+    <iframe src="https://open.spotify.com/embed/playlist/6O5Sa2P3Bo8EoTxbrNJOlI?utm_source=generator&theme=0" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+    <div class="tracklist">
+      <div class="track"><span class="t-title">Hand Cannot Erase</span><span class="t-artist">Steven Wilson</span></div>
+      <div class="track"><span class="t-title">Oh Lord</span><span class="t-artist">Foxy Shazam</span></div>
+      <div class="track"><span class="t-title">Life Is Better With You</span><span class="t-artist">Michael Franti & Spearhead</span></div>
+      <div class="track"><span class="t-title">I'd Love to Change the World</span><span class="t-artist">Ten Years After</span></div>
+    </div>
+  </div>
+
+  <div class="station" style="--accent: #E3A855; --accent-glow: rgba(227,168,85,0.5);">
+    <div class="tag">Station 02</div>
+    <h2>Nigel's Adventure</h2>
+    <p class="note">Named for the van. Made for the road.</p>
+    <iframe src="https://open.spotify.com/embed/playlist/6vpRgDj57YPDyYIvw6O7H2?utm_source=generator&theme=0" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+    <div class="tracklist">
+      <div class="track"><span class="t-title">Sweet Disposition</span><span class="t-artist">The Temper Trap</span></div>
+      <div class="track highlight"><span class="t-title">Making Plans For Nigel</span><span class="t-artist">XTC</span></div>
+      <div class="track"><span class="t-title">Love My Way</span><span class="t-artist">The Psychedelic Furs</span></div>
+      <div class="track"><span class="t-title">I Ran (So Far Away)</span><span class="t-artist">A Flock Of Seagulls</span></div>
+      <div class="track"><span class="t-title">Calling You</span><span class="t-artist">Blue October</span></div>
+      <div class="track"><span class="t-title">Bowl For Two</span><span class="t-artist">The Expendables</span></div>
+      <div class="track"><span class="t-title">Glycerine</span><span class="t-artist">Bush</span></div>
+      <div class="track"><span class="t-title">Time of the Season</span><span class="t-artist">The Zombies</span></div>
+      <div class="track"><span class="t-title">(Don't Fear) The Reaper</span><span class="t-artist">Blue Öyster Cult</span></div>
+      <div class="track"><span class="t-title">Free Fallin'</span><span class="t-artist">Tom Petty</span></div>
+      <div class="track"><span class="t-title">Go Your Own Way</span><span class="t-artist">Fleetwood Mac</span></div>
+      <div class="track"><span class="t-title">Everybody Wants To Rule The World</span><span class="t-artist">Tears For Fears</span></div>
+      <div class="track"><span class="t-title">Sweet Caroline</span><span class="t-artist">Neil Diamond</span></div>
+      <div class="track"><span class="t-title">Runnin' Down A Dream</span><span class="t-artist">Tom Petty</span></div>
+      <div class="track"><span class="t-title">Blinded By The Light</span><span class="t-artist">Manfred Mann's Earth Band</span></div>
+      <div class="track"><span class="t-title">Werewolves of London</span><span class="t-artist">Warren Zevon</span></div>
+      <div class="track"><span class="t-title">Reverie / Harlequin Forest</span><span class="t-artist">Opeth</span></div>
+      <div class="track"><span class="t-title">Seagulls! (Stop It Now)</span><span class="t-artist">Bad Lip Reading</span></div>
+      <div class="track"><span class="t-title">Bushes of Love</span><span class="t-artist">Bad Lip Reading</span></div>
+    </div>
+  </div>
+
+  <div class="station" style="--accent: #5FE38A; --accent-glow: rgba(95,227,138,0.5);">
+    <div class="tag">Station 03</div>
+    <h2>For The One</h2>
+    <p class="note">The big one. 150+ songs, everything from Muse to Mastodon to Modjo.</p>
+    <iframe src="https://open.spotify.com/embed/playlist/33rjC58O4xs8602FC0l3wn?utm_source=generator&theme=0" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+    <div class="tracklist">
+      <div class="track"><span class="t-title">Feeling Good</span><span class="t-artist">Muse</span></div>
+      <div class="track"><span class="t-title">Fly Like An Eagle</span><span class="t-artist">Steve Miller Band</span></div>
+      <div class="track"><span class="t-title">Turn It Off</span><span class="t-artist">Phantogram</span></div>
+      <div class="track"><span class="t-title">Lady - Hear Me Tonight</span><span class="t-artist">Modjo</span></div>
+      <div class="track"><span class="t-title">Pendulous Skin</span><span class="t-artist">Mastodon</span></div>
+      <div class="track"><span class="t-title">Joseph Merrick</span><span class="t-artist">Mastodon</span></div>
+      <div class="track"><span class="t-title">Elephant Man</span><span class="t-artist">Mastodon</span></div>
+      <div class="track"><span class="t-title">Eye In The Sky</span><span class="t-artist">The Alan Parsons Project</span></div>
+      <div class="track"><span class="t-title">Eddie's Theme</span><span class="t-artist">Alan Silvestri</span></div>
+      <div class="track"><span class="t-title">Don't Follow</span><span class="t-artist">Alice In Chains</span></div>
+      <div class="track"><span class="t-title">Stand By Me</span><span class="t-artist">Ben E. King</span></div>
+      <div class="track"><span class="t-title">Eyes Without A Face</span><span class="t-artist">Billy Idol</span></div>
+      <div class="track"><span class="t-title">The Lengths</span><span class="t-artist">The Black Keys</span></div>
+      <div class="track"><span class="t-title">Keep Me</span><span class="t-artist">The Black Keys</span></div>
+      <div class="track"><span class="t-title">Welcome to The Internet</span><span class="t-artist">Bo Burnham</span></div>
+      <div class="track"><span class="t-title">Sentimental Lady</span><span class="t-artist">Bob Welch</span></div>
+      <div class="track"><span class="t-title">Smalltown Boy</span><span class="t-artist">Bronski Beat</span></div>
+      <div class="track"><span class="t-title">Feels Like Summer</span><span class="t-artist">Childish Gambino</span></div>
+      <div class="track"><span class="t-title">Bitter Sweet Symphony</span><span class="t-artist">The Verve</span></div>
+      <div class="track"><span class="t-title">Overkill (Acoustic)</span><span class="t-artist">Colin Hay</span></div>
+      <div class="track"><span class="t-title">From Can to Can't</span><span class="t-artist">Corey Taylor, Dave Grohl & more</span></div>
+      <div class="track"><span class="t-title">Lazarus</span><span class="t-artist">David Bowie</span></div>
+      <div class="track"><span class="t-title">Divine</span><span class="t-artist">Devin Townsend Project</span></div>
+      <div class="track"><span class="t-title">Darkness</span><span class="t-artist">Disturbed</span></div>
+      <div class="track"><span class="t-title">Wither (Piano Version)</span><span class="t-artist">Dream Theater</span></div>
+      <div class="track"><span class="t-title">The Sun Will Shine on You</span><span class="t-artist">Electric Light Orchestra</span></div>
+      <div class="track"><span class="t-title">Rocket Man</span><span class="t-artist">Elton John</span></div>
+      <div class="track"><span class="t-title">Here Comes the Rain Again</span><span class="t-artist">Eurythmics</span></div>
+      <div class="track"><span class="t-title">Easy</span><span class="t-artist">Faith No More</span></div>
+      <div class="track"><span class="t-title">Take This Bottle</span><span class="t-artist">Faith No More</span></div>
+      <div class="track"><span class="t-title">The Way</span><span class="t-artist">Fastball</span></div>
+      <div class="track"><span class="t-title">On Melancholy Hill</span><span class="t-artist">Gorillaz</span></div>
+      <div class="track"><span class="t-title">At the River</span><span class="t-artist">Groove Armada</span></div>
+      <div class="track"><span class="t-title">Steppin' Out</span><span class="t-artist">Joe Jackson</span></div>
+      <div class="track"><span class="t-title">Don't You Cry</span><span class="t-artist">Kamelot</span></div>
+      <div class="track"><span class="t-title">Rude Boy Rock</span><span class="t-artist">Lionrock</span></div>
+      <div class="track"><span class="t-title">Moon</span><span class="t-artist">Little People</span></div>
+      <div class="track"><span class="t-title">Start Shootin'</span><span class="t-artist">Little People</span></div>
+      <div class="track"><span class="t-title">Sex & Candy</span><span class="t-artist">Marcy Playground</span></div>
+      <div class="track"><span class="t-title">Fade Into You</span><span class="t-artist">Mazzy Star</span></div>
+      <div class="track"><span class="t-title">Who Can It Be Now?</span><span class="t-artist">Men At Work</span></div>
+      <div class="track"><span class="t-title">Help I'm Alive</span><span class="t-artist">Metric</span></div>
+      <div class="track"><span class="t-title">Extreme Ways</span><span class="t-artist">Moby</span></div>
+      <div class="track"><span class="t-title">Bukowski</span><span class="t-artist">Modest Mouse</span></div>
+      <div class="track"><span class="t-title">Pink Cigarette</span><span class="t-artist">Mr. Bungle</span></div>
+      <div class="track"><span class="t-title">Highly Suspicious</span><span class="t-artist">My Morning Jacket</span></div>
+      <div class="track"><span class="t-title">I'm Amazed</span><span class="t-artist">My Morning Jacket</span></div>
+      <div class="track"><span class="t-title">One Big Holiday</span><span class="t-artist">My Morning Jacket</span></div>
+      <div class="track"><span class="t-title">Phone Went West</span><span class="t-artist">My Morning Jacket</span></div>
+      <div class="track"><span class="t-title">Remnants</span><span class="t-artist">My Morning Jacket</span></div>
+      <div class="track"><span class="t-title">Touch Me I'm Going To Scream, Pt. 2</span><span class="t-artist">My Morning Jacket</span></div>
+      <div class="track"><span class="t-title">Wordless Chorus</span><span class="t-artist">My Morning Jacket</span></div>
+      <div class="track"><span class="t-title">Holding My Breath</span><span class="t-artist">Nightingale Cummings</span></div>
+      <div class="track"><span class="t-title">Les Nuits</span><span class="t-artist">Nightmares On Wax</span></div>
+      <div class="track"><span class="t-title">You Wish</span><span class="t-artist">Nightmares On Wax</span></div>
+      <div class="track"><span class="t-title">Don't Even Trip</span><span class="t-artist">Peeping Tom</span></div>
+      <div class="track"><span class="t-title">Major Tom (Coming Home)</span><span class="t-artist">Peter Schilling</span></div>
+      <div class="track"><span class="t-title">Venger</span><span class="t-artist">Perturbator</span></div>
+      <div class="track"><span class="t-title">Don't Move</span><span class="t-artist">Phantogram</span></div>
+      <div class="track"><span class="t-title">Happy Again</span><span class="t-artist">Phantogram</span></div>
+      <div class="track"><span class="t-title">When I'm Small</span><span class="t-artist">Phantogram</span></div>
+      <div class="track"><span class="t-title">Chloroform Girl</span><span class="t-artist">Polkadot Cadaver</span></div>
+      <div class="track"><span class="t-title">Cowboys</span><span class="t-artist">Portishead</span></div>
+      <div class="track"><span class="t-title">Small</span><span class="t-artist">Portishead</span></div>
+      <div class="track"><span class="t-title">Arriving Somewhere But Not Here</span><span class="t-artist">Porcupine Tree</span></div>
+      <div class="track"><span class="t-title">Belispeak</span><span class="t-artist">Purity Ring</span></div>
+      <div class="track"><span class="t-title">Crawlersout</span><span class="t-artist">Purity Ring</span></div>
+      <div class="track"><span class="t-title">fineshrine</span><span class="t-artist">Purity Ring</span></div>
+      <div class="track"><span class="t-title">Obedear</span><span class="t-artist">Purity Ring</span></div>
+      <div class="track highlight"><span class="t-title">Oceans</span><span class="t-artist">Puscifer</span></div>
+      <div class="track highlight"><span class="t-title">Momma Sed</span><span class="t-artist">Puscifer</span></div>
+      <div class="track"><span class="t-title">Goodbye Horses</span><span class="t-artist">Q Lazzarus</span></div>
+      <div class="track"><span class="t-title">Face It Alone</span><span class="t-artist">Queen</span></div>
+      <div class="track"><span class="t-title">I'm Going Slightly Mad</span><span class="t-artist">Queen</span></div>
+      <div class="track"><span class="t-title">Mountain Banjo</span><span class="t-artist">Rhiannon Giddens</span></div>
+      <div class="track"><span class="t-title">Ishtar</span><span class="t-artist">Sao Vicente</span></div>
+      <div class="track"><span class="t-title">Dance On</span><span class="t-artist">The Shadows</span></div>
+      <div class="track"><span class="t-title">Foot Tapper</span><span class="t-artist">The Shadows</span></div>
+      <div class="track"><span class="t-title">Midnight</span><span class="t-artist">The Shadows</span></div>
+      <div class="track"><span class="t-title">Peace Pipe</span><span class="t-artist">The Shadows</span></div>
+      <div class="track"><span class="t-title">Sleepwalk</span><span class="t-artist">The Shadows</span></div>
+      <div class="track"><span class="t-title">Theme for Young Lovers</span><span class="t-artist">The Shadows</span></div>
+      <div class="track"><span class="t-title">Wonderful Land</span><span class="t-artist">The Shadows</span></div>
+      <div class="track"><span class="t-title">Dreamer</span><span class="t-artist">Supertramp</span></div>
+      <div class="track"><span class="t-title">Goodbye Stranger</span><span class="t-artist">Supertramp</span></div>
+      <div class="track"><span class="t-title">The Logical Song</span><span class="t-artist">Supertramp</span></div>
+      <div class="track"><span class="t-title">(Nothing But) Flowers</span><span class="t-artist">Talking Heads</span></div>
+      <div class="track"><span class="t-title">Psycho Killer</span><span class="t-artist">Talking Heads</span></div>
+      <div class="track"><span class="t-title">No Happy Endings</span><span class="t-artist">Tangerine Dream</span></div>
+      <div class="track"><span class="t-title">We Were Set Up</span><span class="t-artist">Tangerine Dream</span></div>
+      <div class="track"><span class="t-title">Breathe</span><span class="t-artist">Télépopmusik</span></div>
+      <div class="track"><span class="t-title">Sweet Disposition</span><span class="t-artist">The Temper Trap</span></div>
+      <div class="track"><span class="t-title">Mr. Invisible</span><span class="t-artist">Thank You Scientist</span></div>
+      <div class="track"><span class="t-title">Quiet</span><span class="t-artist">This Will Destroy You</span></div>
+      <div class="track"><span class="t-title">Any Other Name</span><span class="t-artist">Thomas Newman</span></div>
+      <div class="track"><span class="t-title">Hold Me Now</span><span class="t-artist">Thompson Twins</span></div>
+      <div class="track"><span class="t-title">Oh Sheit it's X</span><span class="t-artist">Thundercat</span></div>
+      <div class="track"><span class="t-title">Take Me Into Your Skin</span><span class="t-artist">Trentemøller</span></div>
+      <div class="track"><span class="t-title">Da Da Da</span><span class="t-artist">Trio</span></div>
+    </div>
+    <p class="note" style="margin: 14px 0 0;">That's the first ~90 of 151 — the rest are in the embed above.</p>
+  </div>
+
+</div>
+
+<footer>
+  <p class="close-line">Every song on here got stuck in the tape deck of some version of us.</p>
+</footer>
+
+<svg class="compass" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="46" fill="none" stroke="#5FE38A" stroke-width="1.5" opacity="0.6"/>
+  <circle cx="50" cy="50" r="30" fill="none" stroke="#5FE38A" stroke-width="1" opacity="0.4"/>
+  <circle cx="50" cy="50" r="14" fill="none" stroke="#5FE38A" stroke-width="1" opacity="0.4"/>
+  <line x1="50" y1="4" x2="50" y2="96" stroke="#5FE38A" stroke-width="0.75" opacity="0.3"/>
+  <line x1="4" y1="50" x2="96" y2="50" stroke="#5FE38A" stroke-width="0.75" opacity="0.3"/>
+  <path d="M 50 50 L 50 4 A 46 46 0 0 1 92 30 Z" fill="#5FE38A" opacity="0.18"/>
+  <circle cx="50" cy="50" r="3" fill="#5FE38A"/>
+</svg>
+
+<a href="anniversary.html" class="channel-switch">
+  <div class="signal-dot"></div>
+  <div class="ch-text">
+    <div class="ch-label">signal found —</div>
+    <div class="ch-name">tune to field log</div>
+  </div>
+</a>
+
+</body>
+</html>
