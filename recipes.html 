@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Visual Log // Gallery</title>
+<title>Kitchen Log // Recipes</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Special+Elite&family=IBM+Plex+Mono:wght@400;500&family=Cormorant+Garamond:ital,wght@0,500;1,500&display=swap');
 
@@ -29,9 +29,8 @@
       radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.35) 0, transparent 100%),
       radial-gradient(1px 1px at 80% 15%, rgba(255,255,255,0.25) 0, transparent 100%),
       radial-gradient(1px 1px at 60% 70%, rgba(255,255,255,0.2) 0, transparent 100%),
-      radial-gradient(1px 1px at 30% 85%, rgba(255,255,255,0.3) 0, transparent 100%),
-      radial-gradient(circle at 50% 0%, rgba(169,140,224,0.10) 0, transparent 45%),
-      radial-gradient(circle at 90% 90%, rgba(95,227,138,0.06) 0, transparent 40%);
+      radial-gradient(circle at 50% 0%, rgba(95,227,138,0.10) 0, transparent 45%),
+      radial-gradient(circle at 90% 90%, rgba(169,140,224,0.06) 0, transparent 40%);
     font-family: 'IBM Plex Mono', monospace;
     color: var(--paper);
     min-height: 100vh;
@@ -81,143 +80,66 @@
     margin: 0;
   }
 
-  .gallery {
-    max-width: 1000px;
+  .container {
+    max-width: 680px;
     margin: 0 auto;
     padding: 30px 20px 100px;
   }
 
-  .year-section {
-    margin-bottom: 40px;
-  }
-
-  .year-heading {
-    font-family: 'Oswald', sans-serif;
-    font-weight: 700;
-    font-size: 28px;
-    letter-spacing: 0.04em;
-    color: var(--paper);
-    margin: 0 0 4px;
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-  }
-  .year-heading .year-count {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ash);
-    font-weight: 400;
-  }
-  .year-rule {
-    height: 1px;
-    background: linear-gradient(to right, var(--year-accent, var(--green)), transparent);
-    margin-bottom: 16px;
-  }
-
-  .year-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 14px;
-  }
-
-  .loading-note {
-    text-align: center;
-    color: var(--ash);
-    font-size: 12px;
-    padding: 40px 0;
-  }
-
-  .frame {
-    position: relative;
-    aspect-ratio: 1;
-    overflow: hidden;
-    cursor: pointer;
+  .dish {
+    margin-bottom: 50px;
     background: var(--panel);
-    box-shadow: inset 0 0 0 1px var(--panel-edge);
-    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+    background-image: repeating-linear-gradient(135deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 2px, transparent 2px, transparent 6px);
+    clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+    box-shadow: inset 0 0 0 1px var(--accent, var(--panel-edge)), 0 12px 40px rgba(0,0,0,0.55);
+    padding: 26px;
   }
 
-  .frame img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    filter: saturate(0.9) contrast(1.05);
-    transition: transform 0.3s ease, filter 0.3s ease;
-    display: block;
-  }
-
-  .frame:hover img {
-    transform: scale(1.06);
-    filter: saturate(1) contrast(1.1);
-  }
-
-  .frame .frame-caption {
-    position: absolute;
-    left: 0; right: 0; bottom: 0;
-    padding: 8px 10px 6px;
-    background: linear-gradient(to top, rgba(10,12,15,0.9), transparent);
-    font-size: 10px;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: var(--paper);
-    opacity: 0;
-    transition: opacity 0.2s ease;
-  }
-  .frame:hover .frame-caption { opacity: 1; }
-
-  .empty-slot {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px dashed var(--panel-edge);
-    color: var(--ash);
+  .dish .tag {
     font-size: 10.5px;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
-    text-align: center;
-    padding: 10px;
+    color: var(--accent, var(--green));
+    margin-bottom: 6px;
   }
 
-  .lightbox {
-    position: fixed;
-    inset: 0;
-    background: rgba(5,6,8,0.9);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 200;
-    padding: 30px;
-    backdrop-filter: blur(3px);
-  }
-  .lightbox.open { display: flex; }
-  .lightbox img {
-    max-width: 100%;
-    max-height: 80vh;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.7);
-  }
-  .lightbox .lb-wrap {
-    max-width: 900px;
-    width: 100%;
-  }
-  .lightbox .lb-caption {
-    text-align: center;
-    margin-top: 14px;
-    color: var(--ash);
-    font-family: 'Special Elite', monospace;
-    font-size: 13px;
-  }
-  .lightbox .close {
-    position: fixed;
-    top: 20px; right: 24px;
-    background: none;
-    border: none;
+  .dish h2 {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    font-size: 24px;
+    margin: 0 0 10px;
     color: var(--paper);
-    font-size: 28px;
-    cursor: pointer;
-    font-family: 'IBM Plex Mono', monospace;
   }
+
+  .dish .story {
+    font-family: 'Special Elite', monospace;
+    font-size: 13.5px;
+    color: var(--ash);
+    line-height: 1.7;
+    margin: 0 0 20px;
+    font-style: italic;
+  }
+
+  .dish h3 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent, var(--green));
+    margin: 18px 0 8px;
+  }
+
+  .dish ul, .dish ol {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 13.5px;
+    line-height: 1.8;
+    color: var(--paper);
+  }
+
+  .dish ol { padding-left: 22px; }
 
   footer {
     text-align: center;
@@ -259,15 +181,9 @@
     z-index: 50;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
   }
-  .channel-switch:hover {
-    border-color: var(--amber);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 0 16px rgba(227,168,85,0.35);
-  }
   .channel-switch .signal-dot {
     width: 8px; height: 8px;
     border-radius: 50%;
-    background: var(--amber);
-    box-shadow: 0 0 8px 2px rgba(227,168,85,0.7);
     animation: blip 1.8s ease-in-out infinite;
     flex-shrink: 0;
   }
@@ -281,7 +197,7 @@
     font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ash);
   }
   .channel-switch .ch-name {
-    font-size: 11.5px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--amber);
+    font-size: 11.5px; letter-spacing: 0.04em; text-transform: uppercase;
   }
   @media (max-width: 480px) {
     .channel-switch .ch-label { display: none; }
@@ -291,26 +207,43 @@
 <body>
 
 <header>
-  <div class="eyebrow">// visual log</div>
-  <h1>Photo Log</h1>
-  <p class="sub">sorted automatically, by year</p>
+  <div class="eyebrow">// kitchen log</div>
+  <h1>Recipes</h1>
+  <p class="sub">the food that fed the story</p>
 </header>
 
-<div class="gallery" id="gallery">
-  <div class="loading-note" id="loadingNote">reading photo dates…</div>
+<div class="container">
+
+  <div class="dish" style="--accent: #5FE38A; --accent-glow: rgba(95,227,138,0.5);">
+    <div class="tag">Entry 01</div>
+    <h2>The Jakob Sandwich</h2>
+    <p class="story">Inspired by Cheba Hut's White Widow, named after our firstborn.</p>
+
+    <h3>Ingredients</h3>
+    <ul>
+      <li>1 ciabatta roll</li>
+      <li>1 boneless chicken breast, oven roasted</li>
+      <li>2–3 slices bacon, cooked</li>
+      <li>2 slices provolone cheese</li>
+      <li>Fresh tomato, sliced</li>
+      <li>Ranch dressing</li>
+    </ul>
+
+    <h3>Steps</h3>
+    <ol>
+      <li>Toast the ciabatta roll.</li>
+      <li>Layer the oven roasted chicken on the bottom half.</li>
+      <li>Top with provolone and melt.</li>
+      <li>Add bacon and fresh tomato slices.</li>
+      <li>Finish with ranch and close the sandwich.</li>
+    </ol>
+  </div>
+
 </div>
 
 <footer>
-  <p class="close-line">Not every moment made it into the timeline. Some just got a picture.</p>
+  <p class="close-line">Someday, Jakob, there's a sandwich with your name on it. Literally.</p>
 </footer>
-
-<div class="lightbox" id="lightbox">
-  <button class="close" id="lbClose">&times;</button>
-  <div class="lb-wrap">
-    <img id="lbImg" src="" alt="">
-    <div class="lb-caption" id="lbCaption"></div>
-  </div>
-</div>
 
 <svg class="compass" viewBox="0 0 100 100">
   <circle cx="50" cy="50" r="46" fill="none" stroke="#5FE38A" stroke-width="1.5" opacity="0.6"/>
@@ -322,195 +255,37 @@
   <circle cx="50" cy="50" r="3" fill="#5FE38A"/>
 </svg>
 
-<a href="anniversary.html" class="channel-switch">
-  <div class="signal-dot"></div>
-  <div class="ch-text">
-    <div class="ch-label">signal found —</div>
-    <div class="ch-name">tune to field log</div>
-  </div>
-</a>
-
-<a href="playlists.html" class="channel-switch" style="right: 18px; bottom: 78px;" onmouseover="this.style.borderColor='#55C8D9'" onmouseout="this.style.borderColor=''">
+<a href="anniversary.html" class="channel-switch" onmouseover="this.style.borderColor='#55C8D9'" onmouseout="this.style.borderColor=''">
   <div class="signal-dot" style="background: #55C8D9; box-shadow: 0 0 8px 2px rgba(85,200,217,0.7);"></div>
   <div class="ch-text">
     <div class="ch-label">signal found —</div>
-    <div class="ch-name" style="color: #55C8D9;">tune to audio log</div>
+    <div class="ch-name" style="color: #55C8D9;">tune to field log</div>
   </div>
 </a>
 
-<a href="around-the-world.html" class="channel-switch" style="right: 18px; bottom: 138px;" onmouseover="this.style.borderColor='#D4534F'" onmouseout="this.style.borderColor=''">
+<a href="playlists.html" class="channel-switch" style="bottom: 78px;" onmouseover="this.style.borderColor='#A98CE0'" onmouseout="this.style.borderColor=''">
+  <div class="signal-dot" style="background: #A98CE0; box-shadow: 0 0 8px 2px rgba(169,140,224,0.7);"></div>
+  <div class="ch-text">
+    <div class="ch-label">signal found —</div>
+    <div class="ch-name" style="color: #A98CE0;">tune to audio log</div>
+  </div>
+</a>
+
+<a href="gallery.html" class="channel-switch" style="bottom: 138px;" onmouseover="this.style.borderColor='#E3A855'" onmouseout="this.style.borderColor=''">
+  <div class="signal-dot" style="background: #E3A855; box-shadow: 0 0 8px 2px rgba(227,168,85,0.7);"></div>
+  <div class="ch-text">
+    <div class="ch-label">signal found —</div>
+    <div class="ch-name" style="color: #E3A855;">tune to photo log</div>
+  </div>
+</a>
+
+<a href="around-the-world.html" class="channel-switch" style="bottom: 198px;" onmouseover="this.style.borderColor='#D4534F'" onmouseout="this.style.borderColor=''">
   <div class="signal-dot" style="background: #D4534F; box-shadow: 0 0 8px 2px rgba(212,83,79,0.7);"></div>
   <div class="ch-text">
     <div class="ch-label">signal found —</div>
     <div class="ch-name" style="color: #D4534F;">tune to signal range</div>
   </div>
 </a>
-
-<a href="recipes.html" class="channel-switch" style="right: 18px; bottom: 198px;" onmouseover="this.style.borderColor='#5FE38A'" onmouseout="this.style.borderColor=''">
-  <div class="signal-dot" style="background: #5FE38A; box-shadow: 0 0 8px 2px rgba(95,227,138,0.7);"></div>
-  <div class="ch-text">
-    <div class="ch-label">signal found —</div>
-    <div class="ch-name" style="color: #5FE38A;">tune to kitchen log</div>
-  </div>
-</a>
-
-<script>
-// Pulls the file list straight from the images/ folder on GitHub —
-// upload a photo, refresh the page, it just shows up. No code edits needed.
-const REPO = 'bloomrebellion/Voorhees';
-const IMAGES_PATH = 'images';
-const IMAGE_EXT = /\.(jpe?g|png|gif|webp)$/i;
-
-const YEAR_ACCENTS = ['#A98CE0', '#D4534F', '#E3A855', '#5FE38A', '#55C8D9'];
-
-async function fetchImageList() {
-  const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${IMAGES_PATH}`);
-  if (!res.ok) throw new Error('Could not read images folder: ' + res.status);
-  const files = await res.json();
-  return files
-    .filter(f => f.type === 'file' && IMAGE_EXT.test(f.name))
-    .map(f => ({ src: f.download_url, name: f.name }));
-}
-
-function readExifDate(buffer) {
-  try {
-    const view = new DataView(buffer);
-    if (view.getUint16(0, false) !== 0xFFD8) return null;
-    let offset = 2;
-    const length = view.byteLength;
-    while (offset < length - 4) {
-      const marker = view.getUint16(offset, false);
-      if (marker !== 0xFFE1) {
-        if ((marker & 0xFF00) !== 0xFF00) break;
-        const size = view.getUint16(offset + 2, false);
-        offset += 2 + size;
-        continue;
-      }
-      const app1Offset = offset + 4;
-      if (view.getUint32(app1Offset, false) !== 0x45786966) return null;
-      const tiffOffset = app1Offset + 6;
-      const little = view.getUint16(tiffOffset, false) === 0x4949;
-      const firstIFDOffset = view.getUint32(tiffOffset + 4, little);
-      const ifdOffset = tiffOffset + firstIFDOffset;
-
-      function readIFD(off) {
-        const numEntries = view.getUint16(off, little);
-        const entries = {};
-        for (let i = 0; i < numEntries; i++) {
-          const entryOffset = off + 2 + i * 12;
-          entries[view.getUint16(entryOffset, little)] = entryOffset;
-        }
-        return entries;
-      }
-
-      function getAsciiString(entryOffset) {
-        const count = view.getUint32(entryOffset + 4, little);
-        const valueOffset = count <= 4 ? entryOffset + 8 : tiffOffset + view.getUint32(entryOffset + 8, little);
-        let str = '';
-        for (let i = 0; i < count - 1; i++) str += String.fromCharCode(view.getUint8(valueOffset + i));
-        return str;
-      }
-
-      const ifd0 = readIFD(ifdOffset);
-      let exifIFD = null;
-      if (ifd0[0x8769]) {
-        const valueOffset = view.getUint32(ifd0[0x8769] + 8, little);
-        exifIFD = readIFD(tiffOffset + valueOffset);
-      }
-
-      let dateStr = null;
-      if (exifIFD && exifIFD[0x9003]) dateStr = getAsciiString(exifIFD[0x9003]);
-      else if (ifd0[0x0132]) dateStr = getAsciiString(ifd0[0x0132]);
-
-      if (!dateStr) return null;
-      const m = dateStr.match(/^(\d{4}):(\d{2}):(\d{2})/);
-      if (!m) return null;
-      return { year: parseInt(m[1]), month: parseInt(m[2]), day: parseInt(m[3]) };
-    }
-    return null;
-  } catch (e) {
-    return null;
-  }
-}
-
-async function getPhotoDate(photo) {
-  try {
-    const res = await fetch(photo.src);
-    const buffer = await res.arrayBuffer();
-    const exif = readExifDate(buffer);
-    if (exif) return exif;
-  } catch (e) { /* fall through */ }
-  return { year: null, month: 0, day: 0 };
-}
-
-async function renderGallery() {
-  const gallery = document.getElementById('gallery');
-  let photoList;
-  try {
-    photoList = await fetchImageList();
-  } catch (e) {
-    gallery.innerHTML = `<div class="loading-note">couldn't load the images folder (${e.message}) — check the repo/folder name in the script</div>`;
-    return;
-  }
-
-  if (photoList.length === 0) {
-    gallery.innerHTML = '<div class="loading-note">no photos yet — upload some to the images/ folder and refresh</div>';
-    return;
-  }
-
-  const dated = await Promise.all(photoList.map(async (p) => {
-    const date = await getPhotoDate(p);
-    return { ...p, ...date };
-  }));
-
-  const groups = {};
-  dated.forEach(p => {
-    const key = p.year || 'Undated';
-    if (!groups[key]) groups[key] = [];
-    groups[key].push(p);
-  });
-
-  const years = Object.keys(groups).filter(y => y !== 'Undated').map(Number).sort((a, b) => a - b);
-  if (groups['Undated']) years.push('Undated');
-
-  gallery.innerHTML = '';
-  years.forEach((year, i) => {
-    const photos = groups[year].sort((a, b) => (a.month - b.month) || (a.day - b.day));
-    const accent = YEAR_ACCENTS[i % YEAR_ACCENTS.length];
-
-    const section = document.createElement('div');
-    section.className = 'year-section';
-    section.innerHTML = `
-      <div class="year-heading" style="color: ${accent}">${year} <span class="year-count">${photos.length} photo${photos.length !== 1 ? 's' : ''}</span></div>
-      <div class="year-rule" style="--year-accent: ${accent}"></div>
-      <div class="year-grid"></div>
-    `;
-    const grid = section.querySelector('.year-grid');
-
-    photos.forEach(p => {
-      const frame = document.createElement('div');
-      frame.className = 'frame';
-      frame.innerHTML = `<img src="${p.src}" alt="${p.name}" loading="lazy">`;
-      frame.addEventListener('click', () => {
-        lbImg.src = p.src;
-        lbCaption.textContent = '';
-        lightbox.classList.add('open');
-      });
-      grid.appendChild(frame);
-    });
-
-    gallery.appendChild(section);
-  });
-}
-
-const lightbox = document.getElementById('lightbox');
-const lbImg = document.getElementById('lbImg');
-const lbCaption = document.getElementById('lbCaption');
-document.getElementById('lbClose').addEventListener('click', () => lightbox.classList.remove('open'));
-lightbox.addEventListener('click', (e) => { if (e.target === lightbox) lightbox.classList.remove('open'); });
-
-renderGallery();
-</script>
 
 
 <style>
@@ -667,13 +442,18 @@ renderGallery();
     document.body.appendChild(link);
   }
 
+  if (localStorage.getItem('signalLockFound') === 'true') {
+    addHiddenChannel();
+  }
+
   if (compass) {
     compass.style.pointerEvents = 'auto';
     compass.style.cursor = 'pointer';
     compass.addEventListener('click', function() {
-      if (document.getElementById('hiddenChannelLink')) return;
+      if (localStorage.getItem('signalLockFound') === 'true') return;
       clickCount++;
       if (clickCount >= UNLOCK_COUNT) {
+        localStorage.setItem('signalLockFound', 'true');
         glitchFlash.classList.add('active');
         glitchText.classList.add('active');
         setTimeout(function() {
