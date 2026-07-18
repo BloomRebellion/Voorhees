@@ -339,17 +339,22 @@
 </a>
 
 <script>
-// Add photos here. Just drop the image file into the images/ folder and add
-// a line below with its filename. The year is read automatically from the
-// photo's EXIF date (the same metadata Google Photos uses). If a photo has
-// no EXIF date (screenshots, downloaded images, etc.), give it a manual
-// "year" so it still gets sorted somewhere sensible.
-const PHOTOS = [
-  { src: 'images/he-asked.jpg', caption: 'July 23, 2017', year: 2017 },
-  // { src: 'images/your-next-photo.jpg', caption: 'optional caption' },
-];
+// Pulls the file list straight from the images/ folder on GitHub —
+// upload a photo, refresh the page, it just shows up. No code edits needed.
+const REPO = 'bloomrebellion/Voorhees';
+const IMAGES_PATH = 'images';
+const IMAGE_EXT = /\.(jpe?g|png|gif|webp)$/i;
 
 const YEAR_ACCENTS = ['#A98CE0', '#D4534F', '#E3A855', '#5FE38A', '#55C8D9'];
+
+async function fetchImageList() {
+  const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${IMAGES_PATH}`);
+  if (!res.ok) throw new Error('Could not read images folder: ' + res.status);
+  const files = await res.json();
+  return files
+    .filter(f => f.type === 'file' && IMAGE_EXT.test(f.name))
+    .map(f => ({ src: f.download_url, name: f.name }));
+}
 
 function readExifDate(buffer) {
   try {
@@ -419,13 +424,25 @@ async function getPhotoDate(photo) {
     const exif = readExifDate(buffer);
     if (exif) return exif;
   } catch (e) { /* fall through */ }
-  if (photo.year) return { year: photo.year, month: 0, day: 0 };
   return { year: null, month: 0, day: 0 };
 }
 
 async function renderGallery() {
   const gallery = document.getElementById('gallery');
-  const dated = await Promise.all(PHOTOS.map(async (p) => {
+  let photoList;
+  try {
+    photoList = await fetchImageList();
+  } catch (e) {
+    gallery.innerHTML = `<div class="loading-note">couldn't load the images folder (${e.message}) — check the repo/folder name in the script</div>`;
+    return;
+  }
+
+  if (photoList.length === 0) {
+    gallery.innerHTML = '<div class="loading-note">no photos yet — upload some to the images/ folder and refresh</div>';
+    return;
+  }
+
+  const dated = await Promise.all(photoList.map(async (p) => {
     const date = await getPhotoDate(p);
     return { ...p, ...date };
   }));
@@ -457,13 +474,10 @@ async function renderGallery() {
     photos.forEach(p => {
       const frame = document.createElement('div');
       frame.className = 'frame';
-      frame.innerHTML = `
-        <img src="${p.src}" alt="${p.caption || ''}" loading="lazy">
-        ${p.caption ? `<div class="frame-caption">${p.caption}</div>` : ''}
-      `;
+      frame.innerHTML = `<img src="${p.src}" alt="${p.name}" loading="lazy">`;
       frame.addEventListener('click', () => {
         lbImg.src = p.src;
-        lbCaption.textContent = p.caption || '';
+        lbCaption.textContent = '';
         lightbox.classList.add('open');
       });
       grid.appendChild(frame);
@@ -471,10 +485,6 @@ async function renderGallery() {
 
     gallery.appendChild(section);
   });
-
-  if (years.length === 0) {
-    gallery.innerHTML = '<div class="loading-note">no photos yet — add some to the images/ folder</div>';
-  }
 }
 
 const lightbox = document.getElementById('lightbox');
