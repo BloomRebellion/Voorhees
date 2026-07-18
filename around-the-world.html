@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signal Range // Around The World</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Special+Elite&family=IBM+Plex+Mono:wght@400;500&family=Cormorant+Garamond:ital,wght@0,500;1,500&display=swap');
+
+  :root{
+    --void: #0A0C0F;
+    --panel: #14181D;
+    --panel-edge: #262E36;
+    --paper: #E9E5DA;
+    --ash: #8B95A0;
+    --green: #5FE38A;
+    --violet: #A98CE0;
+    --blood: #D4534F;
+    --amber: #E3A855;
+    --cyan: #55C8D9;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--void);
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.35) 0, transparent 100%),
+      radial-gradient(1px 1px at 80% 15%, rgba(255,255,255,0.25) 0, transparent 100%),
+      radial-gradient(1px 1px at 60% 70%, rgba(255,255,255,0.2) 0, transparent 100%),
+      radial-gradient(circle at 50% 0%, rgba(212,83,79,0.10) 0, transparent 45%),
+      radial-gradient(circle at 90% 90%, rgba(95,227,138,0.06) 0, transparent 40%);
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--paper);
+    min-height: 100vh;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.018) 0px,
+      rgba(255,255,255,0.018) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    z-index: 400;
+  }
+
+  header {
+    text-align: center;
+    padding: 60px 20px 20px;
+  }
+
+  header .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--blood);
+  }
+
+  header h1 {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 40px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin: 10px 0 8px;
+    color: var(--paper);
+    text-shadow: 0 0 18px rgba(212,83,79,0.35), 0 0 40px rgba(169,140,224,0.15);
+  }
+
+  header p.sub {
+    font-size: 12.5px;
+    color: var(--ash);
+    margin: 0 0 20px;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+  }
+
+  .counters {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    max-width: 900px;
+    margin: 0 auto 30px;
+    padding: 0 20px;
+  }
+
+  .counter {
+    background: var(--panel);
+    border: 1px solid var(--panel-edge);
+    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+    padding: 14px 20px;
+    text-align: center;
+    min-width: 110px;
+  }
+  .counter .c-num {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 26px;
+    color: var(--blood);
+    line-height: 1;
+  }
+  .counter .c-label {
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ash);
+    margin-top: 4px;
+  }
+
+  #map {
+    max-width: 1100px;
+    margin: 0 auto 40px;
+    height: 500px;
+    border: 1px solid var(--panel-edge);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.55);
+  }
+  @media (max-width: 600px) {
+    #map { height: 380px; margin-left: 12px; margin-right: 12px; }
+  }
+
+  .pulse-marker {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--blood);
+    box-shadow: 0 0 0 4px rgba(212,83,79,0.25), 0 0 10px 2px rgba(212,83,79,0.7);
+    animation: pulse 2.2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.75); }
+  }
+
+  .leaflet-popup-content-wrapper {
+    background: var(--panel);
+    color: var(--paper);
+    border-radius: 3px;
+    border: 1px solid var(--panel-edge);
+  }
+  .leaflet-popup-tip { background: var(--panel); }
+  .leaflet-popup-content {
+    margin: 12px 14px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .popup-photo {
+    width: 100%;
+    max-width: 220px;
+    display: block;
+    margin-bottom: 8px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+  }
+  .popup-name {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 13px;
+    color: var(--blood);
+    margin-bottom: 2px;
+  }
+  .popup-location {
+    font-size: 11px;
+    color: var(--ash);
+    margin-bottom: 6px;
+  }
+  .popup-message {
+    font-family: 'Special Elite', monospace;
+    font-size: 12px;
+    color: var(--paper);
+    line-height: 1.5;
+  }
+  .leaflet-container { background: #0A0C0F; }
+
+  footer {
+    text-align: center;
+    padding: 0 20px 80px;
+  }
+  footer .close-line {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 18px;
+    color: var(--violet);
+    max-width: 500px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .compass {
+    position: fixed;
+    bottom: 18px; left: 18px;
+    width: 42px; height: 42px;
+    opacity: 0.55;
+    pointer-events: none;
+    animation: spin 14s linear infinite;
+    z-index: 500;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .compass { animation: none; } }
+
+  .channel-switch {
+    position: fixed;
+    bottom: 18px; right: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px 10px 12px;
+    background: var(--panel);
+    border: 1px solid var(--panel-edge);
+    border-radius: 3px;
+    text-decoration: none;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    z-index: 500;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .channel-switch .signal-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    animation: blip 1.8s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes blip {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+  @media (prefers-reduced-motion: reduce) { .channel-switch .signal-dot { animation: none; } }
+  .channel-switch .ch-text { font-family: 'IBM Plex Mono', monospace; line-height: 1.3; }
+  .channel-switch .ch-label {
+    font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ash);
+  }
+  .channel-switch .ch-name {
+    font-size: 11.5px; letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  @media (max-width: 480px) {
+    .channel-switch .ch-label { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">// signal range</div>
+  <h1>Around The World</h1>
+  <p class="sub">Josh, Carrie's love for you reached further than either of us expected. Every pin below is someone, somewhere, who took a minute out of their day.</p>
+</header>
+
+<div class="counters">
+  <div class="counter"><div class="c-num" id="cCountries">0</div><div class="c-label">Countries</div></div>
+  <div class="counter"><div class="c-num" id="cStates">0</div><div class="c-label">US States</div></div>
+  <div class="counter"><div class="c-num" id="cPhotos">0</div><div class="c-label">Photos</div></div>
+  <div class="counter"><div class="c-num" id="cContinents">0</div><div class="c-label">Continents</div></div>
+</div>
+
+<div id="map"></div>
+
+<footer>
+  <p class="close-line">Someday, Jakob and Elli, you can zoom around this map and see how far a little love traveled — just because people believed in it.</p>
+</footer>
+
+<svg class="compass" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="46" fill="none" stroke="#5FE38A" stroke-width="1.5" opacity="0.6"/>
+  <circle cx="50" cy="50" r="30" fill="none" stroke="#5FE38A" stroke-width="1" opacity="0.4"/>
+  <circle cx="50" cy="50" r="14" fill="none" stroke="#5FE38A" stroke-width="1" opacity="0.4"/>
+  <line x1="50" y1="4" x2="50" y2="96" stroke="#5FE38A" stroke-width="0.75" opacity="0.3"/>
+  <line x1="4" y1="50" x2="96" y2="50" stroke="#5FE38A" stroke-width="0.75" opacity="0.3"/>
+  <path d="M 50 50 L 50 4 A 46 46 0 0 1 92 30 Z" fill="#5FE38A" opacity="0.18"/>
+  <circle cx="50" cy="50" r="3" fill="#5FE38A"/>
+</svg>
+
+<a href="anniversary.html" class="channel-switch" onmouseover="this.style.borderColor='#55C8D9'" onmouseout="this.style.borderColor=''">
+  <div class="signal-dot" style="background: #55C8D9; box-shadow: 0 0 8px 2px rgba(85,200,217,0.7);"></div>
+  <div class="ch-text">
+    <div class="ch-label">signal found —</div>
+    <div class="ch-name" style="color: #55C8D9;">tune to field log</div>
+  </div>
+</a>
+
+<a href="playlists.html" class="channel-switch" style="bottom: 78px;" onmouseover="this.style.borderColor='#A98CE0'" onmouseout="this.style.borderColor=''">
+  <div class="signal-dot" style="background: #A98CE0; box-shadow: 0 0 8px 2px rgba(169,140,224,0.7);"></div>
+  <div class="ch-text">
+    <div class="ch-label">signal found —</div>
+    <div class="ch-name" style="color: #A98CE0;">tune to audio log</div>
+  </div>
+</a>
+
+<a href="gallery.html" class="channel-switch" style="bottom: 138px;" onmouseover="this.style.borderColor='#E3A855'" onmouseout="this.style.borderColor=''">
+  <div class="signal-dot" style="background: #E3A855; box-shadow: 0 0 8px 2px rgba(227,168,85,0.7);"></div>
+  <div class="ch-text">
+    <div class="ch-label">signal found —</div>
+    <div class="ch-name" style="color: #E3A855;">tune to photo log</div>
+  </div>
+</a>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+// Each entry: name (first name or "Anonymous"), city, country, state (US only, optional),
+// lat/lng (approximate is fine), photo (path in world-photos/ folder), message (optional).
+const PLACES = [
+  { name: 'Anonymous', city: 'Four Corners Monument', country: 'USA', state: 'CO, NM, UT, AZ', lat: 36.9991, lng: -109.0452, photo: 'world-photos/four-corners.jpg', message: "Josh, Carrie's love for you is so BIG it has reached 4 Corners - Colorado, New Mexico, Utah & Arizona!!" },
+  { name: 'Anonymous', city: 'Alexandria, NY', country: 'USA', state: 'NY', lat: 44.3315, lng: -75.9163, photo: 'world-photos/alexandria-ny.jpg', message: "Josh, Carrie's love for you is so BIG it has reached Boldt Castle in Alexandria, NY!!" },
+  { name: 'Anonymous', city: 'Brisbane', country: 'Australia', lat: -27.4698, lng: 153.0251, photo: 'world-photos/brisbane-australia.jpg', message: "Josh, Carrie's love for you is so BIG it has reached Brisbane, Australia" },
+  { name: 'Anonymous', city: 'Burley, ID', country: 'USA', state: 'ID', lat: 42.5352, lng: -113.7929, photo: 'world-photos/burley-idaho.jpg', message: "Josh, Carrie's love for you is so big it's reached Burley, Idaho" },
+  { name: 'Anonymous', city: 'Cape Girardeau, MO', country: 'USA', state: 'MO', lat: 37.3059, lng: -89.5181, photo: 'world-photos/cape-girardeau-mo.jpg', message: "Josh, Carrie's love for you is so big it has reached Cape Girardeau, MO" },
+  { name: 'Anonymous', city: 'Columbia, VA', country: 'USA', state: 'VA', lat: 37.6304, lng: -78.1739, photo: 'world-photos/columbia-va.jpg', message: "Josh, Carries Love for you is so BIG it's reached Columbia VA" },
+  { name: 'Anonymous', city: 'Marion County, AL', country: 'USA', state: 'AL', lat: 34.1526, lng: -87.9911, photo: 'world-photos/marion-county-alabama.jpg', message: "Josh, Carries BIG BIG LOVE for you reached Marion County, Alabama" },
+  { name: 'Anonymous', city: 'New Brunswick', country: 'Canada', lat: 46.5653, lng: -66.4619, photo: 'world-photos/new-brunswick-canada.jpg', message: "Josh - Carrie's love for you is so Big it has reached New Brunswick, Canada." },
+  { name: 'Anonymous', city: 'Niagara Falls', country: 'Canada', lat: 43.0896, lng: -79.0849, photo: 'world-photos/niagara-falls-canada.jpg', message: "Josh, Carrie's love for you is so BIG it has reached Niagara Falls Canada!!" },
+  { name: 'Anonymous', city: 'Oahu, HI', country: 'USA', state: 'HI', lat: 21.4389, lng: -158.0001, photo: 'world-photos/oahu-hawaii.jpg', message: "Josh, Carrie's love for you is so BIG it has reached Oahu, Hawaii" },
+  { name: 'Anonymous', city: 'Pendleton, OR', country: 'USA', state: 'OR', lat: 45.6721, lng: -118.7886, photo: 'world-photos/pendleton-oregon.jpg', message: "Josh, Carrie's love for you is so big it's reached Pendleton, Oregon" },
+  { name: 'Anonymous', city: 'Petrified Forest, AZ', country: 'USA', state: 'AZ', lat: 34.9100, lng: -109.8067, photo: 'world-photos/petrified-forest-az.jpg', message: "Josh, Carrie's love for you is so BIG it has reached the Petrified Forest!!!" },
+  { name: 'Anonymous', city: 'Dallas, TX', country: 'USA', state: 'TX', lat: 32.7767, lng: -96.7970, photo: 'world-photos/dallas-tx.jpg', message: "Josh, Carrie's Love for you is SO BIG, it has reached Dallas TX!" },
+  { name: 'Anonymous', city: 'Duluth, MN', country: 'USA', state: 'MN', lat: 46.7867, lng: -92.1005, photo: 'world-photos/duluth-mn.jpg', message: "Josh - Carrie's Love for you is SO BIG it reached Duluth MN!" },
+  { name: 'Anonymous', city: 'Glacier Bay, AK', country: 'USA', state: 'AK', lat: 58.6658, lng: -136.9002, photo: 'world-photos/glacier-bay-alaska.jpg', message: "Josh, Carrie's love for you is so BIG it has reached Glacier Bay Alaska!" },
+  { name: 'Anonymous', city: 'Kingman, AZ', country: 'USA', state: 'AZ', lat: 35.1894, lng: -114.0530, photo: 'world-photos/kingman-az.jpg', message: "Josh, Carrie's love for you is so BIG it has reached Kingman, AZ!!" },
+  { name: 'Anonymous', city: 'Laughlin, NV', country: 'USA', state: 'NV', lat: 35.1678, lng: -114.5758, photo: 'world-photos/laughlin-nv.jpg', message: "Josh, Carrie's love for you is so BIG it has reached Laughlin, NV!!" },
+  { name: 'Anonymous', city: 'Margate', country: 'South Africa', lat: -30.8617, lng: 30.3706, photo: 'world-photos/margate-south-africa.jpg', message: "Josh, Carries love for you is so BIG it has reached Margate, South Africa" },
+  { name: 'Anonymous', city: 'Port St. Lucie, FL', country: 'USA', state: 'FL', lat: 27.2939, lng: -80.3503, photo: 'world-photos/port-st-lucie-florida.jpg', message: "Josh - Carrie's love for you is SO BIG it has reached Port Saint Lucie FLORIDA" },
+  { name: 'Anonymous', city: 'Regensburg, Bavaria', country: 'Germany', lat: 49.0134, lng: 12.1016, photo: 'world-photos/regensburg-germany.jpg', message: "Josh, Carrie's love for you is so BIG it has reached Regensburg, Bavaria, Germany" },
+  { name: 'Anonymous', city: 'Sitka, AK', country: 'USA', state: 'AK', lat: 57.0531, lng: -135.3300, photo: 'world-photos/sitka-alaska.jpg', message: "Josh, Carrie's love for you is so BIG it has reached Sitka, Alaska!" },
+  { name: 'Anonymous', city: 'Toronto', country: 'Canada', lat: 43.6532, lng: -79.3832, photo: 'world-photos/toronto-canada.jpg', message: "Josh, Carrie's love for you is so BIG it has reached Toronto Canada!!" },
+  { name: 'Anonymous', city: 'Winslow, AZ', country: 'USA', state: 'AZ', lat: 35.0242, lng: -110.6974, photo: 'world-photos/winslow-az.jpg', message: "Josh, Carrie's love for you is so BIG it has reached Winslow, AZ!!" },
+];
+
+const CONTINENT_LOOKUP = {
+  'USA': 'North America', 'United States': 'North America', 'Canada': 'North America', 'Mexico': 'North America',
+  'UK': 'Europe', 'United Kingdom': 'Europe', 'England': 'Europe', 'Ireland': 'Europe', 'France': 'Europe',
+  'Germany': 'Europe', 'Spain': 'Europe', 'Italy': 'Europe', 'Netherlands': 'Europe', 'Portugal': 'Europe',
+  'Sweden': 'Europe', 'Norway': 'Europe', 'Poland': 'Europe', 'Switzerland': 'Europe', 'Greece': 'Europe',
+  'Japan': 'Asia', 'China': 'Asia', 'India': 'Asia', 'South Korea': 'Asia', 'Thailand': 'Asia',
+  'Vietnam': 'Asia', 'Philippines': 'Asia', 'Indonesia': 'Asia', 'Israel': 'Asia', 'UAE': 'Asia',
+  'Australia': 'Oceania', 'New Zealand': 'Oceania',
+  'Brazil': 'South America', 'Argentina': 'South America', 'Chile': 'South America', 'Peru': 'South America', 'Colombia': 'South America',
+  'South Africa': 'Africa', 'Egypt': 'Africa', 'Nigeria': 'Africa', 'Kenya': 'Africa', 'Morocco': 'Africa',
+  'Antarctica': 'Antarctica'
+};
+
+function updateCounters() {
+  const countries = new Set(PLACES.map(p => p.country));
+  const states = new Set();
+  PLACES.forEach(p => {
+    if (p.state) p.state.split(',').forEach(s => states.add(s.trim()));
+  });
+  const continents = new Set(PLACES.map(p => CONTINENT_LOOKUP[p.country] || 'Unknown'));
+
+  document.getElementById('cCountries').textContent = countries.size;
+  document.getElementById('cStates').textContent = states.size;
+  document.getElementById('cPhotos').textContent = PLACES.length;
+  document.getElementById('cContinents').textContent = continents.size;
+}
+
+const map = L.map('map', { minZoom: 2, worldCopyJump: true }).setView([20, 0], 2);
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+  subdomains: 'abcd',
+  maxZoom: 19
+}).addTo(map);
+
+const pulseIcon = L.divIcon({
+  className: '',
+  html: '<div class="pulse-marker"></div>',
+  iconSize: [14, 14],
+  iconAnchor: [7, 7]
+});
+
+PLACES.forEach(p => {
+  const marker = L.marker([p.lat, p.lng], { icon: pulseIcon }).addTo(map);
+  const popupHtml = `
+    ${p.photo ? `<img class="popup-photo" src="${p.photo}" alt="${p.city}">` : ''}
+    <div class="popup-name">${p.name || 'Anonymous'}</div>
+    <div class="popup-location">${p.city}, ${p.country}</div>
+    ${p.message ? `<div class="popup-message">${p.message}</div>` : ''}
+  `;
+  marker.bindPopup(popupHtml);
+});
+
+updateCounters();
+</script>
+</body>
+</html>
