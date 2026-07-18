@@ -504,5 +504,180 @@ lightbox.addEventListener('click', (e) => { if (e.target === lightbox) lightbox.
 renderGallery();
 </script>
 
+
+<style>
+  .terminal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(5,6,8,0.95);
+    z-index: 1000;
+    display: none;
+    padding: 40px 20px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .terminal-overlay.open { display: flex; flex-direction: column; }
+  .terminal-box {
+    max-width: 700px; margin: 0 auto; width: 100%;
+    display: flex; flex-direction: column; height: 100%;
+  }
+  .terminal-header {
+    color: #5FE38A; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 12px; opacity: 0.7;
+  }
+  .terminal-history {
+    flex: 1; overflow-y: auto; color: #5FE38A; font-size: 13px; line-height: 1.6;
+    white-space: pre-wrap; margin-bottom: 12px;
+  }
+  .terminal-history .cmd-echo { color: #E9E5DA; }
+  .terminal-input-line { display: flex; align-items: center; gap: 8px; border-top: 1px solid #262E36; padding-top: 10px; }
+  .terminal-prompt { color: #5FE38A; font-size: 14px; }
+  .terminal-input {
+    flex: 1; background: none; border: none; color: #5FE38A;
+    font-family: 'IBM Plex Mono', monospace; font-size: 14px; outline: none;
+  }
+  .glitch-flash {
+    position: fixed; inset: 0; background: #fff; opacity: 0;
+    z-index: 2000; pointer-events: none;
+  }
+  .glitch-flash.active { animation: glitchFlash 1.2s steps(2) forwards; }
+  @keyframes glitchFlash {
+    0% { opacity: 0; }
+    10% { opacity: 0.8; background: #5FE38A; }
+    20% { opacity: 0; }
+    30% { opacity: 0.6; background: #D4534F; }
+    40% { opacity: 0; }
+    60% { opacity: 0.3; background: #fff; }
+    100% { opacity: 0; }
+  }
+  .glitch-text {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 22px;
+    letter-spacing: 0.1em; text-transform: uppercase; color: #fff;
+    z-index: 2001; opacity: 0; text-align: center; pointer-events: none;
+  }
+  .glitch-text.active { animation: glitchText 1.2s steps(3) forwards; }
+  @keyframes glitchText {
+    0% { opacity: 0; }
+    15% { opacity: 1; transform: translate(-52%, -50%); }
+    30% { opacity: 1; transform: translate(-48%, -50%); }
+    45% { opacity: 1; transform: translate(-50%, -50%); }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+</style>
+
+<div class="terminal-overlay" id="terminalOverlay">
+  <div class="terminal-box">
+    <div class="terminal-header">// hidden channel — type 'help'</div>
+    <div class="terminal-history" id="terminalHistory"></div>
+    <div class="terminal-input-line">
+      <span class="terminal-prompt">&gt;</span>
+      <input type="text" class="terminal-input" id="terminalInput" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+</div>
+
+<div class="glitch-flash" id="glitchFlash"></div>
+<div class="glitch-text" id="glitchText">SIGNAL LOCK ACQUIRED</div>
+
+<script>
+(function() {
+  const overlay = document.getElementById('terminalOverlay');
+  const history = document.getElementById('terminalHistory');
+  const input = document.getElementById('terminalInput');
+
+  const COMMANDS = {
+    help: 'available: nigel, tyler, jakob, elli, josh, dad, love',
+    nigel: '1996 Chevy Astro. Named after the XTC song. Carried us from Surprise, AZ to Fort Collins, CO before his transmission gave out. Good van.',
+    tyler: "A stranger who found us through a fundraiser and gave us his Volvo, no strings attached but one: take care of Nigel. Some kindness doesn't need explaining.",
+    jakob: 'Born February 3, 2021. Loud, loved, ours.',
+    elli: 'Born March 11, 2023. Same as her brother. Just louder.',
+    josh: 'Nine years and counting. Still choosing you. Every single time.',
+    dad: 'Miss you every day. Wyoming was worth every mile.',
+    love: 'detected. quantity: immeasurable.',
+    sudo: 'nice try. this terminal answers to no one.',
+    '42': "close, but this isn't that kind of story.",
+  };
+
+  function printLine(text, isEcho) {
+    const line = document.createElement('div');
+    if (isEcho) line.className = 'cmd-echo';
+    line.textContent = text;
+    history.appendChild(line);
+    history.scrollTop = history.scrollHeight;
+  }
+
+  function openTerminal() {
+    overlay.classList.add('open');
+    if (!history.dataset.greeted) {
+      printLine('// signal acquired. type a name, or "help".');
+      history.dataset.greeted = 'true';
+    }
+    input.focus();
+  }
+  function closeTerminal() {
+    overlay.classList.remove('open');
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '`' && document.activeElement !== input) {
+      e.preventDefault();
+      overlay.classList.contains('open') ? closeTerminal() : openTerminal();
+    }
+    if (e.key === 'Escape') closeTerminal();
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      const val = input.value.trim().toLowerCase();
+      if (!val) return;
+      printLine('> ' + val, true);
+      const response = COMMANDS[val] || ('command not found: "' + val + '". type "help".');
+      printLine(response);
+      input.value = '';
+    }
+  });
+
+  const compass = document.querySelector('.compass');
+  const glitchFlash = document.getElementById('glitchFlash');
+  const glitchText = document.getElementById('glitchText');
+  let clickCount = 0;
+  const UNLOCK_COUNT = 9;
+
+  function addHiddenChannel() {
+    if (document.getElementById('hiddenChannelLink')) return;
+    const link = document.createElement('a');
+    link.href = 'hidden.html';
+    link.id = 'hiddenChannelLink';
+    link.className = 'channel-switch';
+    link.style.right = '18px';
+    link.style.bottom = '198px';
+    link.onmouseover = function() { link.style.borderColor = '#F5F5F5'; };
+    link.onmouseout = function() { link.style.borderColor = ''; };
+    link.innerHTML = '<div class="signal-dot" style="background: #F5F5F5; box-shadow: 0 0 8px 2px rgba(245,245,245,0.7);"></div>' +
+      '<div class="ch-text"><div class="ch-label">signal found —</div>' +
+      '<div class="ch-name" style="color: #F5F5F5;">tune to channel zero</div></div>';
+    document.body.appendChild(link);
+  }
+
+  if (compass) {
+    compass.style.pointerEvents = 'auto';
+    compass.style.cursor = 'pointer';
+    compass.addEventListener('click', function() {
+      if (document.getElementById('hiddenChannelLink')) return;
+      clickCount++;
+      if (clickCount >= UNLOCK_COUNT) {
+        glitchFlash.classList.add('active');
+        glitchText.classList.add('active');
+        setTimeout(function() {
+          glitchFlash.classList.remove('active');
+          glitchText.classList.remove('active');
+          addHiddenChannel();
+        }, 1300);
+      }
+    });
+  }
+})();
+</script>
+
 </body>
 </html>
