@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Family Archive // Online</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --void: #0A0C0F;
+    --green: #5FE38A;
+    --ash: #8B95A0;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--void);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--green);
+    padding: 30px 20px;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.018) 0px,
+      rgba(255,255,255,0.018) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    z-index: 10;
+  }
+
+  .terminal {
+    max-width: 560px;
+    width: 100%;
+  }
+
+  .line {
+    font-size: 15px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    min-height: 1.7em;
+  }
+
+  .line.dim { color: var(--ash); }
+  .line.title { font-size: 17px; letter-spacing: 0.06em; }
+
+  .cursor {
+    display: inline-block;
+    width: 8px;
+    height: 15px;
+    background: var(--green);
+    vertical-align: text-bottom;
+    animation: blink 0.9s steps(1) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .enter-link {
+    display: none;
+    margin-top: 30px;
+    font-size: 16px;
+    letter-spacing: 0.08em;
+    color: var(--green);
+    text-decoration: none;
+    border: 1px solid var(--green);
+    padding: 12px 22px;
+    text-align: center;
+    background: rgba(95,227,138,0.05);
+    animation: pulseGlow 2.2s ease-in-out infinite;
+  }
+  .enter-link:hover {
+    background: rgba(95,227,138,0.15);
+  }
+  @keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 0 8px rgba(95,227,138,0.25); }
+    50% { box-shadow: 0 0 18px rgba(95,227,138,0.5); }
+  }
+
+  .timestamp {
+    display: none;
+    margin-top: 40px;
+    font-size: 10.5px;
+    color: var(--ash);
+    letter-spacing: 0.05em;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cursor { animation: none; }
+    .enter-link { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="terminal" id="terminal"></div>
+
+<script>
+const LINES = [
+  { text: 'FAMILY ARCHIVE // ONLINE', cls: 'title' },
+  { text: '' },
+  { text: 'Signal detected:', cls: 'dim' },
+  { text: 'March 2017 — Present' },
+  { text: '' },
+  { text: 'Transmission type:', cls: 'dim' },
+  { text: 'Love story / Survival log / Family record' },
+  { text: '' },
+  { text: 'Status:', cls: 'dim' },
+  { text: 'Still transmitting...' },
+];
+
+const terminal = document.getElementById('terminal');
+let lineIndex = 0;
+
+function typeLine(line, callback) {
+  const div = document.createElement('div');
+  div.className = 'line' + (line.cls ? ' ' + line.cls : '');
+  terminal.appendChild(div);
+
+  const cursor = document.createElement('span');
+  cursor.className = 'cursor';
+
+  let charIndex = 0;
+  const text = line.text;
+
+  function typeChar() {
+    if (charIndex <= text.length) {
+      div.textContent = text.slice(0, charIndex);
+      div.appendChild(cursor);
+      charIndex++;
+      setTimeout(typeChar, text.length === 0 ? 80 : 22);
+    } else {
+      cursor.remove();
+      callback();
+    }
+  }
+  typeChar();
+}
+
+function typeAll() {
+  if (lineIndex < LINES.length) {
+    typeLine(LINES[lineIndex], () => {
+      lineIndex++;
+      setTimeout(typeAll, 180);
+    });
+  } else {
+    finish();
+  }
+}
+
+function finish() {
+  const link = document.createElement('a');
+  link.href = 'anniversary.html';
+  link.className = 'enter-link';
+  link.textContent = '[ ENTER ARCHIVE ]';
+  terminal.appendChild(link);
+  requestAnimationFrame(() => { link.style.display = 'inline-block'; });
+
+  const ts = document.createElement('div');
+  ts.className = 'timestamp';
+  ts.textContent = 'last updated: ' + document.lastModified;
+  terminal.appendChild(ts);
+  requestAnimationFrame(() => { ts.style.display = 'block'; });
+}
+
+typeAll();
+</script>
+
+</body>
+</html>
