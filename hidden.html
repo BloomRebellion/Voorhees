@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Channel Zero</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Special+Elite&family=IBM+Plex+Mono:wght@400;500&family=Cormorant+Garamond:ital,wght@0,500;1,500&display=swap');
+
+  :root{
+    --void: #0A0C0F;
+    --panel: #14181D;
+    --panel-edge: #262E36;
+    --paper: #E9E5DA;
+    --ash: #8B95A0;
+    --ghost: #F5F5F5;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--void);
+    min-height: 100vh;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--paper);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+
+  .static-bg {
+    position: fixed;
+    inset: 0;
+    opacity: 0.03;
+    background-image: repeating-linear-gradient(0deg, #fff 0px, #fff 1px, transparent 1px, transparent 2px);
+    pointer-events: none;
+  }
+
+  .box {
+    max-width: 620px;
+    text-align: left;
+  }
+
+  .eyebrow {
+    font-size: 10.5px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--ghost);
+    opacity: 0.7;
+    margin-bottom: 30px;
+    text-align: center;
+  }
+
+  .note {
+    font-family: 'Special Elite', monospace;
+    font-size: 16px;
+    line-height: 1.9;
+    color: var(--paper);
+    margin-bottom: 30px;
+  }
+
+  .sign {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 19px;
+    color: var(--ghost);
+    text-align: right;
+  }
+
+  .back {
+    display: block;
+    text-align: center;
+    margin-top: 40px;
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ash);
+    text-decoration: none;
+    border-bottom: 1px dashed var(--panel-edge);
+    padding-bottom: 2px;
+  }
+  .back:hover { color: var(--ghost); border-color: var(--ghost); }
+</style>
+</head>
+<body>
+
+<div class="static-bg"></div>
+
+<div class="box">
+  <div class="eyebrow">// channel zero — found, not broadcast</div>
+  <p class="note">Josh,<br>Nine years ago, you asked me to be your girlfriend.<br>And I said yes.</p>
+  <p class="note">Not because I thought I knew exactly what our life would look like. I didn't. But I knew I wanted to find out with you.</p>
+  <p class="note">I knew I was choosing someone who would climb into a half-built van with me and call it home. Someone who would chase an idea with me even when it sounded a little crazy. Someone who would look at a broken-down Astro and see the beginning of an adventure instead of the end of a plan.</p>
+  <p class="note">We didn't have everything figured out. We still don't.<br>But we always had each other.</p>
+  <p class="note">Our story isn't the easy version. It has broken-down vehicles, motel rooms, lost plans, heartbreak, and moments where we had to start over. It has people who showed up when we needed them most, and memories we never could have planned.</p>
+  <p class="note">Somewhere between the miles, the moves, the setbacks, and the little moments nobody else saw, we built a life.</p>
+  <p class="note">Then Jakob came along.<br>Then Elli.<br>And suddenly all those miles weren't just about us anymore. They were the road that brought us to them.</p>
+  <p class="note">When I look back at everything we've been through, I don't think about the things that went wrong. I think about how many times we figured it out. How many times we chose each other. How many times we kept going.</p>
+  <p class="note">You have been there for every version of me.<br>The girl who said yes.<br>The girl living in a van.<br>The girl trying to figure out motherhood.<br>The girl rebuilding after hard seasons.<br>The woman I am today.</p>
+  <p class="note">And I have been there for every version of you too.</p>
+  <p class="note">I don't need our story to be perfect.<br>I like that it has fingerprints all over it.<br>I like that it shows where we've been.<br>I like that someday our kids will be able to look back and see that before there was a house, before there was a wedding, before there were four of us — there were two people who loved each other enough to keep going.</p>
+  <p class="note">Nine years later, I would still say yes.<br>To you.<br>To us.<br>To the road ahead.</p>
+  <p class="note">Thank you for being my favorite adventure.<br>I love you.<br>Still.<br>Always.</p>
+  <p class="sign">— C</p>
+  <a href="anniversary.html" class="back">back to the record</a>
+</div>
+
+</body>
+</html>
